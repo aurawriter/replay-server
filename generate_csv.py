@@ -1,0 +1,90 @@
+import os
+import csv
+import json
+import re
+
+month_to_index = {
+    'Jan': '01',
+    'Feb': '02',
+    'Mar': '03',
+    'Apr': '04',
+    'May': '05',
+    'Jun': '06',
+    'Jul': '07',
+    'Aug': '08',
+    'Sep': '09',
+    'Oct': '10',
+    'Nov': '11',
+    'Dec': '12'
+}
+
+
+def process_logs(folder_path, output_csv):
+    # Create or open the CSV file for writing
+    with open(output_csv, 'w', newline='') as csvfile:
+        fieldnames = ['tier', 'p1', 'p2', 'score', 'date',
+                      'link', 'team1', 'team2', 'turns', 'winner']
+        csv_writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
+
+        # Write the header to the CSV file
+        csv_writer.writeheader()
+
+        # Walk through all files in the 'logs' folder and its subdirectories
+        for root, _, files in os.walk(folder_path):
+            for filename in files:
+                if filename.endswith(".json"):
+                    file_path = os.path.join(root, filename)
+
+                    # Read the JSON file and extract relevant elements
+                    with open(file_path, 'r') as json_file:
+                        try:
+                            data = json.load(json_file)
+                            turns = data.get('turns', '')
+                            if turns <= 2:
+                                continue
+                            id = data.get("roomid", '').split("-")[2]
+                            p1 = data.get('p1', '')
+                            p2 = data.get('p2', '')
+                            winner = data.get('winner', '')
+                            score = data.get('score', [0, 0])
+                            score = f"{score[0]} - {score[1]}"
+                            timestamp = data.get('timestamp', '')
+                            month = timestamp.split(" ")[1]
+                            day = timestamp.split(" ")[2]
+                            year = timestamp.split(" ")[3][2:4]
+                            timestamp = f"{month_to_index[month]}/{day}/{year}"
+
+                            team1 = data.get('p1team', [])
+                            if team1:
+                                team1 = [p["species"] for p in team1]
+                            team2 = data.get('p2team', [])
+                            if team2:
+                                team2 = [p["species"] for p in team2]
+
+                            format = root.split("/")[-2]
+                            p1id = re.sub(r'\W+', '', p1).replace("_", "")
+                            p2id = re.sub(r'\W+', '', p2).replace("_", "")
+                            link = f"https://staraptorshowdown.com/replays/{format}/{id}_{p1id}_vs_{p2id}.html"
+
+                            # Write the values to the CSV file
+                            csv_writer.writerow({
+                                'tier': format,
+                                'winner': winner,
+                                'p1': p1,
+                                'score': score,
+                                'p2': p2,
+                                'date': timestamp,
+                                'team1': "/".join(team1),
+                                'team2': "/".join(team2),
+                                'link': link,
+                                'turns': turns,
+                            })
+                        except json.JSONDecodeError as e:
+                            print(f"Error reading file {file_path}: {e}")
+                        except Exception as e:
+                            print(f"Error processing file {file_path}: {e}")
+
+
+process_logs('../pokemon-showdown/logs',
+             '../pokemon-showdown-client/play.pokemonshowdown.com/replays/data.csv')
+print("Done")

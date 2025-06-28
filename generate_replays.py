@@ -12,9 +12,9 @@ old_months = ["2023-01", "2023-02", "2023-03", "2023-04",
               "2024-05", "2024-06", "2024-07", "2024-08",
               "2024-09", "2024-10", "2024-11", "2024-12", "2025-01",
               "2025-02", "2025-03", "2025-04"]
-old_months = [f"pokemon-showdown/logs/{m}" for m in old_months]
+old_months = [f"../pokemon-showdown/logs/{m}" for m in old_months]
 subfolders = [f.path for f in os.scandir(
-    "pokemon-showdown/logs/") if f.is_dir() and f.path[-3] == "-"]
+    "../pokemon-showdown/logs/") if f.is_dir() and f.path[-3] == "-"]
 subfolders = set(subfolders) - set(old_months)
 log_json_dict = defaultdict(list)
 
@@ -32,7 +32,7 @@ for dir in subfolders:
                     log_json_dict[format].append(log_json)
 
 for format, log_jsons in log_json_dict.items():
-    format_dir = f"pokemon-showdown-client/play.pokemonshowdown.com/replays/{format}"
+    format_dir = f"../pokemon-showdown-client/play.pokemonshowdown.com/replays/{format}"
     if not os.path.exists(format_dir):
         os.makedirs(format_dir)
     for log_json in log_jsons:
@@ -61,4 +61,4 @@ for format, log_jsons in log_json_dict.items():
             for line in log["log"]:
                 f.write(line + "\n")
 
-print("Script finished running")
+print("Generated Replays")

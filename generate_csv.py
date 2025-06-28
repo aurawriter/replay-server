@@ -87,4 +87,4 @@ def process_logs(folder_path, output_csv):
 
 process_logs('../pokemon-showdown/logs',
              '../pokemon-showdown-client/play.pokemonshowdown.com/replays/data.csv')
-print("Done")
+print("Generated CSV")

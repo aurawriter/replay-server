@@ -7,5 +7,14 @@ export default defineConfig({
   base: "./",
   build: {
     outDir: "../pokemon-showdown-client/play.pokemonshowdown.com/replays",
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          react: ["react", "react-dom"],
+          mui: ["@mui/material", "@mui/icons-material"],
+          muidatagrid: ["@mui/x-data-grid"],
+        },
+      },
+    },
   },
 });

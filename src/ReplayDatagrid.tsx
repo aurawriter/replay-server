@@ -1,67 +1,29 @@
-import { Link } from "@mui/material";
+import {
+  Autocomplete,
+  Link,
+  Stack,
+  TextField,
+  Typography,
+} from "@mui/material";
 import { DataGrid, GridColDef } from "@mui/x-data-grid";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import GridToolbar2 from "./GridToolbar2";
-
-export type ReplayRow = {
-  id: number;
-  tier: string;
-  p1: string;
-  p2: string;
-  score: string;
-  date: string;
-  link: string;
-  team1: string;
-  team2: string;
-  turns: string;
-  winner: string;
-};
-
-async function fetchCSV(filePath: string): Promise<ReplayRow[]> {
-  try {
-    const response = await fetch(filePath);
-    const csvText = await response.text();
-    const lines = csvText.split("\r\n");
-    const data: ReplayRow[] = [];
-    for (let i = 1; i < lines.length; i++) {
-      const values = lines[i].split(",");
-      if (values.length < 10) continue;
-      const p1 = values[1];
-      const p2 = values[2];
-      const winner = values[9];
-      const loser = p1 === winner ? p2 : p1;
-      let score = values[3];
-      if (p1 !== winner) {
-        score = score.split("-").reverse().join(" - ");
-      }
-      const team1 = values[6];
-      const team2 = values[7];
-      const winningTeam = p1 === winner ? team1 : team2;
-      const losingTeam = p1 === winner ? team2 : team1;
-      const row: ReplayRow = {
-        id: i,
-        tier: values[0],
-        p1: winner,
-        p2: loser,
-        score: score,
-        date: values[4],
-        link: values[5],
-        team1: winningTeam,
-        team2: losingTeam,
-        turns: values[8],
-        winner: values[9],
-      };
-      data.push(row);
-    }
-    return data;
-  } catch (error) {
-    console.error("Error fetching or parsing CSV:", error);
-    return [];
-  }
-}
+import { ReplayRow } from "./readCsv";
 
 const columns: GridColDef[] = [
-  { field: "date", headerName: "Date", type: "string", flex: 7 },
+  {
+    field: "date",
+    headerName: "Date",
+    type: "dateTime",
+    flex: 8,
+    valueGetter: (p) => new Date(p),
+    renderCell: (params) =>
+      new Date(params.value).toLocaleDateString("en-US", {
+        year: "numeric",
+        month: "short",
+        day: "2-digit",
+      }),
+  },
   { field: "tier", headerName: "Tier", flex: 10, width: 100 },
   { field: "p1", headerName: "Winner", flex: 10 },
   { field: "score", headerName: "Score", flex: 5, sortable: false },
@@ -84,26 +46,82 @@ const columns: GridColDef[] = [
 ];
 
 const paginationModel = { page: 0, pageSize: 20 };
+const selectStyle = { fontSize: 14, width: 250 };
 
-export function ReplayDatagrid() {
-  const [rrows, setRrows] = useState([] as ReplayRow[]);
+export function ReplayDatagrid({
+  allRows,
+}: Readonly<{ allRows: ReplayRow[] }>) {
+  const [tier, setTier] = useState(null as string | null);
+  const [player, setPlayer] = useState(null as string | null);
+  const [mons, setMons] = useState(undefined as string[] | undefined);
+  const allTiers = [...new Set(allRows.map((row) => row.tier))].sort((a, b) =>
+    a.localeCompare(b),
+  );
+  const allPlayers = [
+    ...new Set(allRows.map((row) => [row.p1, row.p2]).flatMap((e) => e)),
+  ].sort((a, b) => a.localeCompare(b));
+  const allMons = [
+    ...new Set(
+      allRows
+        .map((row) => [...row.team1.split("/"), ...row.team2.split("/")])
+        .flatMap((e) => e),
+    ),
+  ].sort((a, b) => a.localeCompare(b));
 
-  useEffect(() => {
-    fetchCSV("data.csv").then((rows) => setRrows(rows));
-  }, []);
+  const rrows = allRows.filter((row) => {
+    const matchesTier = !tier || row.tier === tier;
+    const matchesPlayer = !player || row.p1 === player || row.p2 === player;
+    const matchesMons =
+      !mons ||
+      mons.every((mon) => row.team1.includes(mon) || row.team2.includes(mon));
+    return matchesTier && matchesPlayer && matchesMons;
+  });
 
   return (
-    <DataGrid
-      rows={rrows}
-      columns={columns}
-      getRowId={(r) => r["id"] ?? ""}
-      initialState={{ pagination: { paginationModel } }}
-      pageSizeOptions={[10, 20, 50, 100]}
-      checkboxSelection
-      slots={{ toolbar: GridToolbar2 }}
-      density="compact"
-      sx={{ border: 0 }}
-      style={{ width: "100%", height: "95%" }}
-    />
+    <>
+      <Stack direction="row" spacing={2} sx={{ marginLeft: 1 }}>
+        <Typography variant="h6">Tier:</Typography>
+        <Autocomplete
+          sx={selectStyle}
+          options={allTiers}
+          value={tier}
+          onChange={(_, val) => setTier(val)}
+          size="small"
+          renderInput={(params) => <TextField {...params} label="Tier" />}
+        />
+        <Typography variant="h6">Player:</Typography>
+        <Autocomplete
+          sx={selectStyle}
+          options={allPlayers}
+          value={player}
+          onChange={(_, val) => setPlayer(val)}
+          size="small"
+          renderInput={(params) => <TextField {...params} label="Player" />}
+        />
+        <Typography variant="h6">Pokemon:</Typography>
+        <Autocomplete
+          multiple
+          sx={selectStyle}
+          options={allMons}
+          value={mons}
+          onChange={(_, val) => setMons(val)}
+          size="small"
+          renderInput={(params) => <TextField {...params} label="Pokemon" />}
+        />
+      </Stack>
+
+      <DataGrid
+        rows={rrows}
+        columns={columns}
+        getRowId={(r) => r["id"] ?? ""}
+        initialState={{ pagination: { paginationModel } }}
+        pageSizeOptions={[10, 20, 50, 100]}
+        checkboxSelection
+        slots={{ toolbar: GridToolbar2 }}
+        density="compact"
+        sx={{ border: 0 }}
+        style={{ width: "100%", height: "92%" }}
+      />
+    </>
   );
 }

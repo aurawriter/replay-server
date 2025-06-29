@@ -18,6 +18,29 @@ month_to_index = {
     'Dec': '12'
 }
 
+def fix_species(species):
+    if (species.startswith("Alcremie")):
+        return "Alcremie"
+    if (species.startswith("Magearna")):
+        return "Magearna"
+    if (species.startswith("Polteageist")):
+        return "Polteageist"
+    if (species.startswith("Keldeo")):
+        return "Keldeo"
+    if (species.startswith("Minior")):
+        return "Minior"
+    if (species.startswith("Pikachu")):
+        return "Pikachu"
+    if (species.startswith("Sawsbuck")):
+        return "Sawsbuck"
+    if (species.startswith("Maushold")):
+        return "Maushold"
+    if (species.startswith("Dudunsparce")):
+        return "Dudunsparce"
+    if (species.startswith("Vivillon")):
+        return "Vivillon"
+    return species
+
 
 def process_logs(folder_path, output_csv):
     # Create or open the CSV file for writing
@@ -39,36 +62,32 @@ def process_logs(folder_path, output_csv):
                     with open(file_path, 'r') as json_file:
                         try:
                             data = json.load(json_file)
-                            turns = data.get('turns', '')
+                            turns = data.get('turns', 0)
                             if turns <= 2:
                                 continue
-                            id = data.get("roomid", '').split("-")[2]
+                            room_id = data.get("roomid", '').split("-")[2]
                             p1 = data.get('p1', '')
                             p2 = data.get('p2', '')
                             winner = data.get('winner', '')
                             score = data.get('score', [0, 0])
                             score = f"{score[0]} - {score[1]}"
                             timestamp = data.get('timestamp', '')
-                            month = timestamp.split(" ")[1]
-                            day = timestamp.split(" ")[2]
-                            year = timestamp.split(" ")[3][2:4]
-                            timestamp = f"{month_to_index[month]}/{day}/{year}"
 
                             team1 = data.get('p1team', [])
                             if team1:
-                                team1 = [p["species"] for p in team1]
+                                team1 = [fix_species(p["species"]) for p in team1]
                             team2 = data.get('p2team', [])
                             if team2:
-                                team2 = [p["species"] for p in team2]
+                                team2 = [fix_species(p["species"]) for p in team2]
 
-                            format = root.split("/")[-2]
+                            tier = root.split("/")[-2]
                             p1id = re.sub(r'\W+', '', p1).replace("_", "")
                             p2id = re.sub(r'\W+', '', p2).replace("_", "")
-                            link = f"https://staraptorshowdown.com/replays/{format}/{id}_{p1id}_vs_{p2id}.html"
+                            link = f"https://staraptorshowdown.com/replays/{tier}/{room_id}_{p1id}_vs_{p2id}.html"
 
                             # Write the values to the CSV file
                             csv_writer.writerow({
-                                'tier': format,
+                                'tier': tier,
                                 'winner': winner,
                                 'p1': p1,
                                 'score': score,

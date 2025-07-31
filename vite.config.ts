@@ -6,7 +6,7 @@ export default defineConfig({
   plugins: [react()],
   base: "./",
   build: {
-    outDir: "../pokemon-showdown-client/play.pokemonshowdown.com/replays",
+    outDir: "../dh2-client-aurora/replays",
     rollupOptions: {
       input: {
         client: 'testclient.html',

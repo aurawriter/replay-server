@@ -34,7 +34,7 @@ for dir in subfolders:
                     log_json_dict[format].append(log_json)
 
 for format, log_jsons in log_json_dict.items():
-    format_dir = f"../pokemon-showdown-client/play.pokemonshowdown.com/replays/{format}"
+    format_dir = f"../dh2-client-aurora/replays/{format}"
     if not os.path.exists(format_dir):
         os.makedirs(format_dir)
     for log_json in log_jsons:

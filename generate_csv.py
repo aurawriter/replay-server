@@ -3,6 +3,8 @@ import csv
 import json
 import re
 
+server_location = "http://51.81.209.222/testclient.html"
+
 month_to_index = {
     'Jan': '01',
     'Feb': '02',

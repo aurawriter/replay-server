@@ -13,7 +13,7 @@ old_months = ["2023-01", "2023-02", "2023-03", "2023-04",
               "2024-05", "2024-06", "2024-07", "2024-08",
               "2024-09", "2024-10", "2024-11", "2024-12", "2025-01",
               "2025-02", "2025-03", "2025-04", "2025-05"]
-# old_months = []
+old_months = []
 old_months = [f"../dh2-client-aurora/DH2/logs/{m}" for m in old_months]
 subfolders = [f.path for f in os.scandir(
     "../dh2-client-aurora/DH2/logs/") if f.is_dir() and f.path[-3] == "-"]

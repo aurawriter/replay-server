@@ -107,5 +107,5 @@ def process_logs(folder_path, output_csv):
 
 
 process_logs('../dh2-client-aurora/DH2/logs',
-             '../pokemon-showdown-client/play.pokemonshowdown.com/replays/data.csv')
+             '../dh2-client-aurora/replays/data.csv')
 print("Generated CSV")

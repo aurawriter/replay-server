@@ -1,6 +1,19 @@
+#!/bin/bash
+
 trap "echo Exited!; exit;" SIGINT SIGTERM
-while [[ 1=1 ]]
+
+LAST_HASH=""
+
+while true
 do
-	watch --chgexit -n 5 "ls -Ral --full-time ../dh2-client-aurora/DH2/logs/ | sha256sum" && python generate_replays.py && python generate_csv.py
-	sleep 5
+    CURRENT_HASH=$(ls -Ral --full-time ../dh2-client-aurora/DH2/logs/ | sha256sum)
+
+    if [ "$CURRENT_HASH" != "$LAST_HASH" ]; then
+        echo "[*] Change detected at $(date)"
+        python3 generate_replays.py
+        python3 generate_csv.py
+        LAST_HASH="$CURRENT_HASH"
+    fi
+
+    sleep 5
 done

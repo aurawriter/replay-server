@@ -85,7 +85,7 @@ def process_logs(folder_path, output_csv):
                             tier = root.split("/")[-2]
                             p1id = re.sub(r'\W+', '', p1).replace("_", "")
                             p2id = re.sub(r'\W+', '', p2).replace("_", "")
-                            link = f"https://staraptorshowdown.com/replays/{tier}/{room_id}_{p1id}_vs_{p2id}.html"
+                            link = f"https://51.81.209.222/replays/{tier}/{room_id}_{p1id}_vs_{p2id}.html"
 
                             # Write the values to the CSV file
                             csv_writer.writerow({

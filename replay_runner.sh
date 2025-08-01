@@ -10,8 +10,8 @@ do
 
     if [ "$CURRENT_HASH" != "$LAST_HASH" ]; then
         echo "[*] Change detected at $(date)"
-        python3 generate_replays.py
-        python3 generate_csv.py
+        sudo python3 generate_replays.py
+        sudo python3 generate_csv.py
         LAST_HASH="$CURRENT_HASH"
     fi
 
